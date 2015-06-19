@@ -1,1 +1,1 @@
-# hedis-connector-template
+# hedis-connector-mysql
