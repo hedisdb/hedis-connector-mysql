@@ -2,21 +2,47 @@
 #include <regex.h>
 #include "hedis.h"
 
-#define HEDIS_COMMAND_PATTERN "(\\w+):(\\w+)"
+#define HEDIS_COMMAND_PATTERN ".+"
 #define MAX_ERROR_MSG 0x1000
 
 hedisConfigEntry **hedis_entries;
 int hedis_entry_count;
+char *connector_username;
+char *connector_password;
+char *connector_host;
+char *connector_database;
 
-int init(hedisConfigEntry **entries, int entry_count){
-	hedis_entries = entries;
-	hedis_entry_count = entry_count;
+int init(hedisConfigEntry **entries, int entry_count) {
+    hedis_entries = entries;
+    hedis_entry_count = entry_count;
 
-	for(int i = 0; i < entry_count; i++){
-		printf("%s: %s\n", entries[i]->key, entries[i]->value);
-	}
+    for (int i = 0; i < entry_count; i++) {
+        if(!strcasecmp(entries[i]->key, "username")){
+            connector_username = malloc(sizeof(char) * entries[i]->value);
 
-	return 0;
+            strcpy(connector_username, entries[i]->value);
+        }
+
+        if(!strcasecmp(entries[i]->key, "password")){
+            connector_password = malloc(sizeof(char) * entries[i]->value);
+
+            strcpy(connector_password, entries[i]->value);
+        }
+
+        if(!strcasecmp(entries[i]->key, "host")){
+            connector_host = malloc(sizeof(char) * entries[i]->value);
+
+            strcpy(connector_host, entries[i]->value);
+        }
+
+        if(!strcasecmp(entries[i]->key, "database")){
+            connector_database = malloc(sizeof(char) * entries[i]->value);
+
+            strcpy(connector_database, entries[i]->value);
+        }
+    }
+
+    return 0;
 }
 
 char **parse_hedis_command(const char * to_match) {
@@ -34,7 +60,7 @@ char **parse_hedis_command(const char * to_match) {
         return NULL;
     }
 
-    char **str = malloc(sizeof(char *) * 2);
+    char **str = malloc(sizeof(char *) * 1);
 
     /* "P" is a pointer into the string which points to the end of the
      *        previous match. */
@@ -78,12 +104,92 @@ char **parse_hedis_command(const char * to_match) {
     return str;
 }
 
-char *get_value(const char *str){
-	char **result = parse_hedis_command(str);
+char *get_value(const char *str) {
+    MYSQL *MySQLConRet;
+    MYSQL *MySQLConnection = NULL;
 
-	char *value = malloc(sizeof(char) * 30);
+    char *hostname = connector_host;
+    char *user = connector_username;
+    char password = connector_password;
+    char *db = "hedistest";
 
-	sprintf(value, "first: %s, second: %s", result[0], result[1]);
+    MySQLConnection = mysql_init(NULL);
 
-	return value;
+    printf("enter password: ");
+    scanf("%s", password);
+
+    MySQLConRet = mysql_real_connect(MySQLConnection, hostname, user, password, db, 0, NULL, 0);
+
+    if (MySQLConRet == NULL) {
+        printf("fail\n");
+
+        return 1;
+    }
+
+    printf("MySQL Connection Info: %s \n", mysql_get_host_info(MySQLConnection));
+    printf("MySQL Client Info: %s \n", mysql_get_client_info());
+    printf("MySQL Server Info: %s \n", mysql_get_server_info(MySQLConnection));
+
+    int mysqlStatus = 0;
+    MYSQL_RES *mysqlResult = NULL;
+
+    if (mysqlResult) {
+        mysql_free_result(mysqlResult);
+        mysqlResult = NULL;
+    }
+
+    MYSQL_ROW mysqlRow;
+    MYSQL_FIELD *mysqlFields;
+    my_ulonglong numRows;
+    unsigned int numFields;
+
+    char *sqlSelStatement = "select * from user";
+
+    mysqlStatus = mysql_query(MySQLConnection, sqlSelStatement);
+
+    if (mysqlStatus) {
+        printf((char *)mysql_error(MySQLConnection));
+
+        return 1;
+    }
+
+    mysqlResult = mysql_store_result(MySQLConnection);
+
+    if (mysqlResult) {
+        numRows = mysql_num_rows(mysqlResult);
+
+        numFields = mysql_field_count(MySQLConnection);
+
+        numFields = mysql_num_fields(mysqlResult);
+
+        printf("Number of rows=%u  Number of fields=%u \n", numRows, numFields);
+    } else {
+        printf("Result set is empty\n");
+    }
+
+    mysqlFields = mysql_fetch_fields(mysqlResult);
+
+    for (int i = 0; i < numFields; i++) {
+        printf("%s\t", mysqlFields[i].name);
+    }
+
+    printf("\n");
+
+    while (mysqlRow = mysql_fetch_row(mysqlResult)) {
+        for (int i = 0; i < numFields; i++) {
+            printf("%s\t", mysqlRow[i] ? mysqlRow[i] : "NULL");
+        }
+
+        printf("\n");
+    }
+
+    if (mysqlResult) {
+        mysql_free_result(mysqlResult);
+
+        mysqlResult = NULL;
+    }
+
+    mysql_close(MySQLConnection);
+
+    return value;
 }
