@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <regex.h>
+#include <mysql.h>
 #include "hedis.h"
 
 #define HEDIS_COMMAND_PATTERN ".+"
@@ -18,25 +19,25 @@ int init(hedisConfigEntry **entries, int entry_count) {
 
     for (int i = 0; i < entry_count; i++) {
         if(!strcasecmp(entries[i]->key, "username")){
-            connector_username = malloc(sizeof(char) * entries[i]->value);
+            connector_username = malloc(sizeof(char) * strlen(entries[i]->value));
 
             strcpy(connector_username, entries[i]->value);
         }
 
         if(!strcasecmp(entries[i]->key, "password")){
-            connector_password = malloc(sizeof(char) * entries[i]->value);
+            connector_password = malloc(sizeof(char) * strlen(entries[i]->value));
 
             strcpy(connector_password, entries[i]->value);
         }
 
         if(!strcasecmp(entries[i]->key, "host")){
-            connector_host = malloc(sizeof(char) * entries[i]->value);
+            connector_host = malloc(sizeof(char) * strlen(entries[i]->value));
 
             strcpy(connector_host, entries[i]->value);
         }
 
         if(!strcasecmp(entries[i]->key, "database")){
-            connector_database = malloc(sizeof(char) * entries[i]->value);
+            connector_database = malloc(sizeof(char) * strlen(entries[i]->value));
 
             strcpy(connector_database, entries[i]->value);
         }
@@ -108,17 +109,9 @@ char *get_value(const char *str) {
     MYSQL *MySQLConRet;
     MYSQL *MySQLConnection = NULL;
 
-    char *hostname = connector_host;
-    char *user = connector_username;
-    char password = connector_password;
-    char *db = "hedistest";
-
     MySQLConnection = mysql_init(NULL);
 
-    printf("enter password: ");
-    scanf("%s", password);
-
-    MySQLConRet = mysql_real_connect(MySQLConnection, hostname, user, password, db, 0, NULL, 0);
+    MySQLConRet = mysql_real_connect(MySQLConnection, connector_host, connector_username, connector_password, connector_database, 0, NULL, 0);
 
     if (MySQLConRet == NULL) {
         printf("fail\n");
@@ -126,9 +119,9 @@ char *get_value(const char *str) {
         return 1;
     }
 
-    printf("MySQL Connection Info: %s \n", mysql_get_host_info(MySQLConnection));
-    printf("MySQL Client Info: %s \n", mysql_get_client_info());
-    printf("MySQL Server Info: %s \n", mysql_get_server_info(MySQLConnection));
+    printf("MySQL Connection Info: %s\n", mysql_get_host_info(MySQLConnection));
+    printf("MySQL Client Info: %s\n", mysql_get_client_info());
+    printf("MySQL Server Info: %s\n", mysql_get_server_info(MySQLConnection));
 
     int mysqlStatus = 0;
     MYSQL_RES *mysqlResult = NULL;
@@ -143,7 +136,7 @@ char *get_value(const char *str) {
     my_ulonglong numRows;
     unsigned int numFields;
 
-    char *sqlSelStatement = "select * from user";
+    char *sqlSelStatement = str;
 
     mysqlStatus = mysql_query(MySQLConnection, sqlSelStatement);
 
@@ -175,8 +168,18 @@ char *get_value(const char *str) {
 
     printf("\n");
 
+    char *value;
+
     while (mysqlRow = mysql_fetch_row(mysqlResult)) {
         for (int i = 0; i < numFields; i++) {
+            if(i == 0){
+                value = malloc(sizeof(char) * strlen(mysqlRow[i]));
+
+                strcpy(value, mysqlRow[i]);
+
+                break;
+            }
+
             printf("%s\t", mysqlRow[i] ? mysqlRow[i] : "NULL");
         }
 
