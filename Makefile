@@ -1,15 +1,14 @@
 CC = gcc
 CFLAGS = -O1 -std=c99 -fPIC
+MYSQLFLAGS = $(shell mysql_config --cflags --libs)
 NAME = $(shell basename $(shell pwd))
 TARGET = lib${NAME}.so
 
-.SUFFIXS: .c .cpp
-
 main: main.o
-	${CC} -shared $< -o ${TARGET}
+	${CC} -shared $< ${MYSQLFLAGS} -o ${TARGET}
 
 %.o: %.c
-	${CC} $< ${CFLAGS} -c
+	${CC} $< ${CFLAGS} ${MYSQLFLAGS} -c
 
 .PHONY: install
 
