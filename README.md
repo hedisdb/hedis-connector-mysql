@@ -13,7 +13,7 @@ mysqltest:
 
 ## Requirement
 
-* Debain / Ubuntu
+* Debian / Ubuntu
 
 ```sh
 sudo apt-get install libmysqlclient-dev
