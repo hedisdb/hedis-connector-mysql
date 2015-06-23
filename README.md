@@ -19,7 +19,16 @@ mysqltest:
 sudo apt-get install libmysqlclient-dev
 ```
 
-## Environment Variables
+## Build & Install
+
+```sh
+make
+sudo make install
+```
+
+## Run with Hedis
+
+### Enviroment Variables
 
 ```sh
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
