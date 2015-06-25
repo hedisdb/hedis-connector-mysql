@@ -33,3 +33,11 @@ sudo make install
 ```sh
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
 ```
+
+## Command Syntax
+
+.+
+
+### Example
+
+"select name from user limit 1" will return one "name" field at "user" table
