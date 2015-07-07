@@ -120,9 +120,9 @@ char *get_value(const char *str) {
     MySQLConRet = mysql_real_connect(MySQLConnection, connector_host, connector_username, connector_password, connector_database, 0, NULL, 0);
 
     if (MySQLConRet == NULL) {
-        printf("fail\n");
+        printf("Connection fail\n");
 
-        return 1;
+        return NULL;
     }
 
     printf("MySQL Connection Info: %s\n", mysql_get_host_info(MySQLConnection));
