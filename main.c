@@ -180,17 +180,7 @@ char *get_value(const char *str) {
 
     value = malloc(sizeof(char) * 200);
 
-    strcpy(value, "{\"columns\":[");
-
-    for (int i = 0; i < numFields; i++) {
-        strcat(value, "\"");
-        strcat(value, mysqlFields[i].name);
-        strcat(value, "\",");
-    }
-
-    strip_last_char(value);
-
-    strcat(value, "],\"values\":{");
+    strcpy(value, "{\"columns\":{");
 
     char **columns = NULL;
 
