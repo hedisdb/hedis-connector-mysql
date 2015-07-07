@@ -35,3 +35,24 @@ sudo make install
 ### Example
 
 "select name from user limit 1" will return one "name" field at "user" table
+
+### Return value
+
+```json
+{
+  "columns": {
+    "id": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "name": [
+      "kewang",
+      "iris",
+      "NULL",
+      "mitake"
+    ]
+  }
+}
+```
