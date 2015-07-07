@@ -105,6 +105,12 @@ char **parse_hedis_command(const char * to_match) {
     return str;
 }
 
+void strip_last_char(char *str) {
+    int length = strlen(str);
+
+    memmove(&str[length - 1], &str[length], 1);
+}
+
 char *get_value(const char *str) {
     MYSQL *MySQLConRet;
     MYSQL *MySQLConnection = NULL;
@@ -141,9 +147,9 @@ char *get_value(const char *str) {
     mysqlStatus = mysql_query(MySQLConnection, sqlSelStatement);
 
     if (mysqlStatus) {
-        printf((char *)mysql_error(MySQLConnection));
+        printf("%s\n", (char *)mysql_error(MySQLConnection));
 
-        return 1;
+        return NULL;
     }
 
     mysqlResult = mysql_store_result(MySQLConnection);
@@ -158,6 +164,8 @@ char *get_value(const char *str) {
         printf("Number of rows=%u  Number of fields=%u \n", numRows, numFields);
     } else {
         printf("Result set is empty\n");
+
+        return NULL;
     }
 
     mysqlFields = mysql_fetch_fields(mysqlResult);
@@ -168,23 +176,58 @@ char *get_value(const char *str) {
 
     printf("\n");
 
-    char *value;
+    char *value = NULL;
+
+    value = malloc(sizeof(char) * 200);
+
+    strcpy(value, "{\"columns\":[");
+
+    for (int i = 0; i < numFields; i++) {
+        strcat(value, "\"");
+        strcat(value, mysqlFields[i].name);
+        strcat(value, "\",");
+    }
+
+    strip_last_char(value);
+
+    strcat(value, "],\"values\":{");
+
+    char **columns = NULL;
+
+    columns = malloc(sizeof(char *) * numFields);
+
+    for (int i = 0; i < numFields; i++) {
+        columns[i] = malloc(sizeof(char) * 100);
+
+        strcpy(columns[i], "\"");
+        strcat(columns[i], mysqlFields[i].name);
+        strcat(columns[i], "\":[");
+    }
 
     while (mysqlRow = mysql_fetch_row(mysqlResult)) {
         for (int i = 0; i < numFields; i++) {
-            if(i == 0){
-                value = malloc(sizeof(char) * strlen(mysqlRow[i]));
+            char *column = mysqlRow[i] ? mysqlRow[i] : "NULL";
 
-                strcpy(value, mysqlRow[i]);
+            strcat(columns[i], "\"");
+            strcat(columns[i], column);
+            strcat(columns[i], "\",");
 
-                break;
-            }
-
-            printf("%s\t", mysqlRow[i] ? mysqlRow[i] : "NULL");
+            printf("%s\t", column);
         }
 
         printf("\n");
     }
+
+    for (int i = 0; i < numFields; i++) {
+        strip_last_char(columns[i]);
+
+        strcat(value, columns[i]);
+        strcat(value, "],");
+    }
+
+    strip_last_char(value);
+
+    strcat(value, "}}");
 
     if (mysqlResult) {
         mysql_free_result(mysqlResult);
