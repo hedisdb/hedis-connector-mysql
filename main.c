@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <regex.h>
 #include <mysql.h>
+#include <string.h>
+#include <strings.h>
+#include <stdlib.h>
 #include "hedis.h"
 
 #define HEDIS_COMMAND_PATTERN ".+"
@@ -142,7 +145,7 @@ char *get_value(const char *str) {
     my_ulonglong numRows;
     unsigned int numFields;
 
-    char *sqlSelStatement = str;
+    const char *sqlSelStatement = str;
 
     mysqlStatus = mysql_query(MySQLConnection, sqlSelStatement);
 
@@ -161,7 +164,7 @@ char *get_value(const char *str) {
 
         numFields = mysql_num_fields(mysqlResult);
 
-        printf("Number of rows=%u  Number of fields=%u \n", numRows, numFields);
+        printf("Number of rows=%u  Number of fields=%u\n", numRows, numFields);
     } else {
         printf("Result set is empty\n");
 
