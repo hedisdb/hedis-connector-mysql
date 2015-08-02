@@ -97,13 +97,16 @@ char **parse_hedis_command(const char * to_match) {
         if (i != 0) {
             int size = finish - start;
 
-            str[i - 1] = malloc(sizeof(char) * size);
+            str[i - 1] = malloc(sizeof(char) * (size + 1));
 
             sprintf(str[i - 1], "%.*s", size, to_match + start);
         }
     }
 
     p += m[0].rm_eo;
+
+    regfree(r);
+    free(r);
 
     return str;
 }
@@ -229,6 +232,12 @@ char *get_value(const char *str) {
     }
 
     mysql_close(MySQLConnection);
+
+    for (int i = 0; i < numFields; i++) {
+        free(columns[i]);
+    }
+
+    free(columns);
 
     return value;
 }
