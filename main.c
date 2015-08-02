@@ -22,25 +22,25 @@ int init(hedisConfigEntry **entries, int entry_count) {
 
     for (int i = 0; i < entry_count; i++) {
         if(!strcasecmp(entries[i]->key, "username")){
-            connector_username = malloc(sizeof(char) * strlen(entries[i]->value));
+            connector_username = malloc(sizeof(char) * (strlen(entries[i]->value) + 1));
 
             strcpy(connector_username, entries[i]->value);
         }
 
         if(!strcasecmp(entries[i]->key, "password")){
-            connector_password = malloc(sizeof(char) * strlen(entries[i]->value));
+            connector_password = malloc(sizeof(char) * (strlen(entries[i]->value) + 1));
 
             strcpy(connector_password, entries[i]->value);
         }
 
         if(!strcasecmp(entries[i]->key, "host")){
-            connector_host = malloc(sizeof(char) * strlen(entries[i]->value));
+            connector_host = malloc(sizeof(char) * (strlen(entries[i]->value) + 1));
 
             strcpy(connector_host, entries[i]->value);
         }
 
         if(!strcasecmp(entries[i]->key, "database")){
-            connector_database = malloc(sizeof(char) * strlen(entries[i]->value));
+            connector_database = malloc(sizeof(char) * (strlen(entries[i]->value) + 1));
 
             strcpy(connector_database, entries[i]->value);
         }
